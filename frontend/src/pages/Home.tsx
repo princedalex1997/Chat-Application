@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import loginImage from "../assets/Images/loginImg.jpg";
 import { Register } from '../components/Register';
 import { SignIn } from '../components/SignIn';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+
 
 const Home = () => {
   const [toggle, setToggle] = useState(false);
+      const {user} = useAuth()
+
+    console.log("users is :", user)
+    const navigation = useNavigate()
+
+    // useEffect(()=>{
+    //     if(user){
+    //       navigation("/Chats")
+    //     }
+    // },[])
 
   const handleToggle = () => {
     setToggle(prev => !prev);

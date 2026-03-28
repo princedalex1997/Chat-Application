@@ -5,20 +5,12 @@ import User from "../models/UserModels.js";
 //Access Chat List In One By One
 //URL : POST (http://localhost:5000/chats)
 export const accessChat = asyncHandler(async (req, res) => {
-  // if(!req.body || !req.body.loggedInUserId){
-  //     return res.status(400).json({ message: "loggedInUserId is required" });
-  // }
   const loggedInUserId = req.user._id;
   const { userId } = req.body;
 
   if (!userId) {
     return res.status(400).json({ message: "userId is required" });
   }
-
-  //   if (!userId) {
-  //     console.log("Error to access user id");
-  //     return res.sendStatus(400);
-  //   }
   var isChat = await Chat.find({
     isGroupChat: false,
     $and: [
@@ -120,6 +112,71 @@ export const createGroupChat = asyncHandler(async (req, res) => {
     throw new Error(error.message);
   }
 });
-export const renameGroup = asyncHandler(async (req, res) => {});
-export const removeFromGroup = asyncHandler(async (req, res) => {});
-export const addToGroup = asyncHandler(async (req, res) => {});
+
+// TO RENAME THE GROUP
+//PUT   (http://localhost:5000/chats/rename)
+export const renameGroup = asyncHandler(async (req, res) => {
+  const { chatId, chatName } = req.body;
+
+  const updatedChat = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      chatName: chatName,
+    },
+    {
+      new: true,
+    },
+  )
+    .populate("users", "-password")
+    .populate("groupAdmin", "-password");
+
+  if (!updatedChat) {
+    res.status(400);
+    throw new Error("Chat not found");
+  }
+  res.json(updatedChat);
+});
+
+// PUT http://localhost:5000/chats/groupremove
+export const removeFromGroup = asyncHandler(async (req, res) => {
+  const { chatId, userId } = req.body;
+  const removeUsers = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $pull: { users: userId },
+    },
+    {
+      new: true,
+    },
+  )
+    .populate("users", "-password")
+    .populate("groupAdmin", "-password");
+
+  if (!removeUsers) {
+    res.status(400);
+    throw new Error("Chat Not Found");
+  }
+  res.json(removeUsers);
+});
+
+// PUT :     http://localhost:5000/chats/groupadd
+export const addToGroup = asyncHandler(async (req, res) => {
+  const { chatId, userId } = req.body;
+  const addUsers = await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $push: { users: userId },
+    },
+    {
+      new: true,
+    },
+  )
+    .populate("users", "-password")
+    .populate("groupAdmin", "-password");
+
+  if (!addUsers) {
+    res.status(400);
+    throw new Error("Chat Not Found");
+  }
+  res.json(addUsers);
+});

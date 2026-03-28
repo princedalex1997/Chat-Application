@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LOGIN_API } from "../DATA/APIList"
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export const SignIn: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { user, loginUser } = useAuth()
 
     const navigation = useNavigate()
 
-
-    // console.log("API us ",apiUrl)
+    useEffect(() => {
+        if (user) {
+            navigation("/Chats")
+        }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,6 +39,7 @@ export const SignIn: React.FC = () => {
             const data = await response.json()
             localStorage.setItem("userInfo", JSON.stringify(data));
             console.warn("Data is:", data)
+            loginUser(data)
             navigation('/Chats')
             alert("Done")
         } catch (err) {
