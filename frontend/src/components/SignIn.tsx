@@ -41,7 +41,7 @@ export const SignIn: React.FC = () => {
             console.warn("Data is:", data)
             loginUser(data)
             navigation('/Chats')
-            alert("Done")
+      
         } catch (err) {
             setError(err instanceof Error ? `${err.message}. Please Try Again` : 'An error occurred');
         } finally {
