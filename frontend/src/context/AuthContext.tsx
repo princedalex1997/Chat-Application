@@ -15,6 +15,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
   });
+  const [chatUserList, setChatUserList] = useState<USER[]>([])
 
   const loginUser = (u: USER) => {
     if (!u || !u._id) {
@@ -24,13 +25,13 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("userInfo", JSON.stringify(u));
   }
 
-  const logOutUser = () =>{
+  const logOutUser = () => {
     setUser(null)
     localStorage.removeItem("userInfo")
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loginUser,logOutUser }}>
+    <AuthContext.Provider value={{ user, setUser, loginUser, logOutUser, chatUserList, setChatUserList }}>
       {children}
     </AuthContext.Provider>
   );

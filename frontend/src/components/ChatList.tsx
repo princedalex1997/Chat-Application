@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { FETCHCHATLIST } from "../DATA/APIList"
 import { useAuth } from '../hooks/useAuth';
 import SkeletonLoading from "../pages/UI/UX"
+import { useChats } from '../hooks/useChats';
 
 const style = {
     position: 'absolute',
@@ -25,15 +26,31 @@ const style = {
 
 
 
-const ChatList = ({ lists, searchOptions, setOptions, handleFetchChatList, loading }: ChatListPROPS) => {
+const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading }: ChatListPROPS) => {
     const [openProfileModal, setOpenProfileModal] = React.useState(false);
     const handleProfileModalOpen = () => setOpenProfileModal(true);
     const handleProfileModalClose = () => setOpenProfileModal(false);
+    const [chatPorfile, setChatProfile] = useState([])
 
+    const { chatUserList, setChatUserList } = useChats()
     const { user } = useAuth()
-
-
     const Dummyprofile = dummyChatUsersList[0]
+
+    const handleClick = (k: any) => {
+        const chatIs = k.find((u: any) => u._id !== user._id)
+        setChatProfile(chatIs)
+        setChatUserList(chatIs)
+        console.log(chatIs)
+    }
+
+    console.log(lists);
+    
+    const getChatUserName = (users = []) => {
+        if (!users.length) return "No Users";
+        const otherUser = users.find(u => u._id !== user._id);
+        return otherUser && otherUser?.name
+    };
+
 
 
     return (
@@ -62,7 +79,7 @@ const ChatList = ({ lists, searchOptions, setOptions, handleFetchChatList, loadi
                             }
                             hover:bg-blue-600 active:scale-95
                         `}
-                        onClick={handleFetchChatList}
+                        onClick={handleSearchChat}
                     >
                         GO
                     </button>
@@ -82,41 +99,31 @@ const ChatList = ({ lists, searchOptions, setOptions, handleFetchChatList, loadi
                     <SkeletonLoading />
                 ) :
                     <div className="flex flex-col divide-y divide-gray-100">
-                        {lists.map((user) => (
-                            <div
-                                key={user?._id}
-                                className="flex items-center gap-4 p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50 active:bg-gray-100"
-                            >
-                                {/* Avatar */}
-                                {user.avatar ?
-                                    <img
-                                        className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
+                        {lists.map((chat) => (
+                            <div key={chat._id}
 
-                                        src={user.avatar} alt={user.name?.charAt(0).toUpperCase()} />
-                                    :
+                                className="flex items-center gap-4 p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50 active:bg-gray-100">
+                                <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
+                                >
+                                    {/* // {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()} */}
+                                    {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()}
+                                </div>
 
-                                    <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm">
-                                        {user.name?.charAt(0).toUpperCase()}
-
-                                    </div>
-                                }
-
-                                {/* Message Info */}
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0"
+                                    onClick={() => handleClick(chat?.users)}
+                                >
                                     <div className="flex justify-between items-baseline">
                                         <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                            {user.name}
+                                          {chat.isGroupChat ? chat?.chatName :
+                                          chat?.users && getChatUserName(chat?.users)
+                                          }
+                                            
                                         </h3>
                                         <span className="text-[10px] text-gray-400 shrink-0 uppercase">12:45 PM</span>
                                     </div>
                                     <p className="text-sm text-gray-500 truncate mt-0.5">
-                                        {user.lastMessage || "No messages yet..."}
+                                        {chat?.lastMessage || "No messages yet..."}
                                     </p>
-                                </div>
-
-                                {/* Unread Indicator */}
-                                <div className="flex flex-col items-end shrink-0">
-                                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
                                 </div>
                             </div>
                         ))}

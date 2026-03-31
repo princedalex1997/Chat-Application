@@ -5,15 +5,22 @@ import Popover from '@mui/material/Popover';
 import PopupState, { bindTrigger, bindPopover } from 'material-ui-popup-state';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { useChats } from '../hooks/useChats';
+
+
 
 
 const NavBar = () => {
-  const {logOutUser} = useAuth()
+  const { chatUserList, setChatUserList } = useChats()
+
+  const { logOutUser, user } = useAuth()
+
   const navigation = useNavigate()
 
-  const handleLogOut = (value?: string | null)=>{
+
+  const handleLogOut = (value?: string | null) => {
     navigation("/")
-      logOutUser(null)
+    logOutUser(null)
 
   }
 
@@ -39,7 +46,7 @@ const NavBar = () => {
         {/* Name & Status */}
         <div className="flex flex-col">
           <h2 className="text-sm font-bold text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-            John Doe
+           {chatUserList?.name || "No Data Found"}
           </h2>
           <span className="text-xs text-green-500 font-medium tracking-wide">
             Online
@@ -81,7 +88,7 @@ const NavBar = () => {
                 }}
               >
                 <Typography sx={{ p: 2 }}>The content of the Popover.</Typography>
-                <Button onClick={()=>handleLogOut()} >Primary</Button>
+                <Button onClick={() => handleLogOut()} >Primary</Button>
 
               </Popover>
             </div>
