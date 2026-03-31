@@ -3,19 +3,18 @@ import NavBar from './NavBar'
 import { useChats } from '../hooks/useChats'
 
 const ChatPage = () => {
-    const { chatUserList, setChatUserList } = useChats()
-  
+  const { selectedChat, setSelectedChat } = useChats()
   return (
 
     <div>
-      {chatUserList  ? (
-  <>
-    <NavBar />
-    <h1>Chat Page</h1>
-  </>
-) : (
-  "Select Chat"
-)}
+      {selectedChat ? (
+        <>
+          <NavBar />
+          <h1>Chat Page</h1>
+        </>
+      ) : (
+        "Select Chat"
+      )}
     </div>
   )
 }

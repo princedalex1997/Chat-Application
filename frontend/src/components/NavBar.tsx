@@ -11,7 +11,7 @@ import { useChats } from '../hooks/useChats';
 
 
 const NavBar = () => {
-  const { chatUserList, setChatUserList } = useChats()
+  const { selectedChat, setSelectedChat } = useChats()
 
   const { logOutUser, user } = useAuth()
 
@@ -25,7 +25,8 @@ const NavBar = () => {
   }
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10 h-17.5">
+    <nav className={` ${selectedChat ? "flex " : "hidden"}  items-center justify-between px-6 py-3 bg-white border-b
+     border-gray-100 shadow-sm sticky top-0 z-10 h-17.5`}>
 
       {/* Left Side: Back Button & User Info */}
       <div className="flex items-center gap-4 cursor-pointer group">
@@ -46,7 +47,7 @@ const NavBar = () => {
         {/* Name & Status */}
         <div className="flex flex-col">
           <h2 className="text-sm font-bold text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-           {chatUserList?.name || "No Data Found"}
+           {selectedChat?.name || "No Data Found"}
           </h2>
           <span className="text-xs text-green-500 font-medium tracking-wide">
             Online

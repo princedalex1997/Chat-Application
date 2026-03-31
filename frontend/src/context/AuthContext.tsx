@@ -15,7 +15,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
   });
-  const [chatUserList, setChatUserList] = useState<USER[]>([])
+  const [selectedChat, setSelectedChat] = useState<USER[]>([])
 
   const loginUser = (u: USER) => {
     if (!u || !u._id) {
@@ -31,7 +31,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loginUser, logOutUser, chatUserList, setChatUserList }}>
+    <AuthContext.Provider value={{ user, setUser, loginUser, logOutUser, selectedChat, setSelectedChat }}>
       {children}
     </AuthContext.Provider>
   );

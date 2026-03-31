@@ -15,8 +15,8 @@ export type AuthContextType = {
   setUser: React.Dispatch<React.SetStateAction<USER | null>>;
   loginUser: (u: USER) => void;
   logOutUser: (u: any) => void;
-  chatUserList: USER[] | null;
-  setChatUserList: React.Dispatch<React.SetStateAction<USER[] | null>>;
+  selectedChat: USER[] | null;
+  setSelectedChat: React.Dispatch<React.SetStateAction<USER[] | null>>;
 };
 
 export type ChatUser = {

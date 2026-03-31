@@ -12,9 +12,11 @@ const ChatsHome = () => {
   const [searchOptions, setOptions] = useState<string>("")
   const [chatList, setChatList] = useState([])
   const { user } = useAuth()
-  const { chatUserList, setChatUserList } = useChats()
+  const { selectedChat, setSelectedChat } = useChats()
 
   const handleSearchChat = async () => {
+    if (!searchOptions) return
+    // setOptions(e.target.value)
     setLoading(true);
     try {
       const { data } = await axios.get(
@@ -25,6 +27,7 @@ const ChatsHome = () => {
           },
         }
       );
+      console.log("Search Resut:", data)
     } catch (error) {
       console.log(error.response?.data?.message || error.message);
     } finally {
@@ -43,9 +46,10 @@ const ChatsHome = () => {
           },
         }
       );
+
       setChatList(data)
-    //  setChatUserList(prev => [...prev, data.users[0]]);
-      // console.log("handleFetchChatList is :", data)
+      //  setChatUserList(prev => [...prev, data.users[0]]);
+      console.log("handleFetchChatList is :", data)
     } catch (error) {
       console.warn("Error in handleFetchChatList ", handleFetchChatList)
     } finally {
@@ -56,6 +60,7 @@ const ChatsHome = () => {
     handleFetchChatList()
   }, [])
 
+
   return (
     <div className="lg:p-5 bg-[#6366F1] h-screen w-full flex flex-col overflow-hidden">
 
@@ -64,7 +69,12 @@ const ChatsHome = () => {
         {/* Chats List Sidebar */}
         {/* Changed w-90 to a standard w-80 or w-[350px] and added h-full */}
         <div className="hidden md:flex w-80 shrink-0 bg-[#1E293B] text-white rounded-xl overflow-hidden  flex-col border border-slate-700 shadow-xl">
-          <ChatList lists={chatList} loading={loading} searchOptions={searchOptions} setOptions={setOptions} handleSearchChat={handleSearchChat} />
+          {
+            chatList.length > 0 ?
+
+              <ChatList lists={chatList} loading={loading} searchOptions={searchOptions}
+                setOptions={setOptions} handleSearchChat={handleSearchChat} />
+              : 'Not Chat List Founded'}
         </div>
 
         {/* Chats Page Main Content */}
