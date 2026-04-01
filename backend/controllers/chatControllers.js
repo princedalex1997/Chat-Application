@@ -31,7 +31,7 @@ export const accessChat = asyncHandler(async (req, res) => {
   });
 
   if (isChat.length > 0) {
-    res.send(isChat[0]);
+    return res.send(isChat[0]);
   } else {
     var ChatData = {
       chatName: "sender",
@@ -56,6 +56,7 @@ export const accessChat = asyncHandler(async (req, res) => {
 //Fn For Get All The Chats
 //URL : GET (http://localhost:5000/chats)
 export const fetchChats = asyncHandler(async (req, res) => {
+  console.log("requested id is :", req.user._id)
   try {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
       .populate("users", "-password")
@@ -68,6 +69,7 @@ export const fetchChats = asyncHandler(async (req, res) => {
           select: "name email",
         });
         res.status(200).json(result);
+        console.log("Result is , ", result)
       });
   } catch (error) {
     res.status(400);
@@ -77,6 +79,10 @@ export const fetchChats = asyncHandler(async (req, res) => {
 
 // Create a Group for Chats
 //URL : http://localhost:5000/chats/group
+// {
+//           name: groupChatName,
+//           users: JSON.stringify(selectedUsers.map((u) => u._id)),
+//   },
 export const createGroupChat = asyncHandler(async (req, res) => {
   // group name
   // users
@@ -115,6 +121,10 @@ export const createGroupChat = asyncHandler(async (req, res) => {
 
 // TO RENAME THE GROUP
 //PUT   (http://localhost:5000/chats/rename)
+//  {
+//           chatId: selectedChat._id,
+//           chatName: groupChatName,
+//   },
 export const renameGroup = asyncHandler(async (req, res) => {
   const { chatId, chatName } = req.body;
 
@@ -138,6 +148,10 @@ export const renameGroup = asyncHandler(async (req, res) => {
 });
 
 // PUT http://localhost:5000/chats/groupremove
+// {
+//           chatId: selectedChat._id,
+//           userId: user1._id,
+//  },
 export const removeFromGroup = asyncHandler(async (req, res) => {
   const { chatId, userId } = req.body;
   const removeUsers = await Chat.findByIdAndUpdate(
@@ -160,6 +174,10 @@ export const removeFromGroup = asyncHandler(async (req, res) => {
 });
 
 // PUT :     http://localhost:5000/chats/groupadd
+//  {
+//           chatId: selectedChat._id,
+//           userId: user1._id,
+//   },
 export const addToGroup = asyncHandler(async (req, res) => {
   const { chatId, userId } = req.body;
   const addUsers = await Chat.findByIdAndUpdate(

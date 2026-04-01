@@ -36,22 +36,25 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
     const [chatPorfile, setChatProfile] = useState([])
     const [searchUser, setSearchUser] = useState<string | null>("")
     const [searchUserList, setSearchUserList] = useState([])
-const [selectedGropAddList, setSelectedGropAddList] = useState([]);
+    const [selectedGropAddList, setSelectedGropAddList] = useState([]);
     const [groupChatName, setGroupChatName] = useState("")
 
 
     const [searchLoading, setSearchLoading] = useState<boolean>(false)
     const [addGroupLoading, setAddGroupLoading] = useState(false)
 
-    const { selectedChat, setSelectedChat } = useChats()
+
+    const { selectedChat, setSelectedChat, chatLists, setChatLists } = useChats()
+
     const { user } = useAuth()
     const Dummyprofile = dummyChatUsersList[0]
 
-    const handleClick = (k: any) => {
-        const chatIs = k.find((u: any) => u._id !== user._id)
-        setChatProfile(chatIs)
-        setSelectedChat(chatIs)
-        console.log(chatIs)
+    const handleAddSelectedChat = (k: any) => {
+        // const chatIs = k.find((u: any) => u._id !== user._id)
+        setChatProfile(k)
+        setSelectedChat(k)
+        console.log(k)
+
     }
     const getChatUserName = (users = []) => {
         if (!users.length) return "No Users";
@@ -94,37 +97,37 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
     };
     const handleAddGroup = async () => {
         setAddGroupLoading(true);
-
-        console.log(`${FETCHCHATLIST}group`);
-
+        const payload = {
+            name: groupChatName,
+            users: JSON.stringify([
+                ...selectedGropAddList.map(u => u._id),
+                user._id
+            ]),
+        };
+        console.log("payload is :", user._id)
         try {
             const { data } = await axios.post(
                 `${FETCHCHATLIST}group`,
-                {
-                    name: groupChatName,
-                    users: JSON.stringify(selectedGropAddList), // ✅ no stringify needed (usually)
-                },
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${user.token}`,
                     },
                 }
             );
-
             alert("Done");
+            setChatLists(prev => [...prev, data])
+            setGroupChatName("")
+            selectedGropAddList.length = 0
+            setOpenProfileModal(false)
             console.log("Done", data);
-
         } catch (error: any) {
             console.log("error ins API");
-            
             console.log(error.message);
         } finally {
             setAddGroupLoading(false);
         }
-
-        console.log("selectedGropAddList", selectedGropAddList);
     };
-
 
 
     return (
@@ -186,11 +189,11 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
                                 </div>
 
                                 <div className="flex-1 min-w-0"
-                                    onClick={() => handleClick(chat?.users)}
+                                    onClick={() => handleAddSelectedChat(chat)}
                                 >
                                     <div className="flex justify-between items-baseline">
                                         <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                            {chat.isGroupChat === true ? chat?.chatName :
+                                            {chat.isGroupChat === "true" ? chat?.chatName :
                                                 chat?.users && getChatUserName(chat?.users)
                                             }
 
@@ -200,6 +203,7 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
                                     <p className="text-sm text-gray-500 truncate mt-0.5">
                                         {chat?.lastMessage || "No messages yet..."}
                                     </p>
+
                                 </div>
                             </div>
                         ))}
@@ -237,11 +241,11 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
 
                             <Button
                                 variant="contained"
-                                disabled={!searchUser.trim() || addGroupLoading}
+                                disabled={!searchUser.trim() || addGroupLoading || selectedGropAddList.length === 0}
                                 onClick={handleAddGroup}
                                 sx={{ borderRadius: '8px', textTransform: 'none' }}
                             >
-                               {addGroupLoading ? "Creating" :"Add" }
+                                {addGroupLoading ? "Creating" : "Add"}
                             </Button>
                         </Box>
 
@@ -258,7 +262,7 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
                         <TextField
                             fullWidth
                             id="outlined-basic"
-                            label="Group Name"
+                            label="Enter user name"
                             variant="outlined"
                             value={searchUser}
                             onChange={(e) => setSearchUser(e.target.value)}
@@ -293,7 +297,7 @@ const [selectedGropAddList, setSelectedGropAddList] = useState([]);
                                             '&:hover': { bgcolor: '#f0f0f0' },
                                             transition: '0.2s'
                                         }}
-                                        onClick={() => handleSelectedAddUserToList(item._id)}
+                                        onClick={() => handleSelectedAddUserToList(item)}
                                     >
                                         <Typography variant="body2" sx={{ color: 'gray' }} >{item?.name}</Typography>
                                     </Box>

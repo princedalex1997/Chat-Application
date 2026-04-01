@@ -15,6 +15,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
   });
+  const [chatLists, setChatLists]  = useState([])
   const [selectedChat, setSelectedChat] = useState<USER[]>([])
 
   const loginUser = (u: USER) => {
@@ -31,7 +32,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loginUser, logOutUser, selectedChat, setSelectedChat }}>
+    <AuthContext.Provider value={{ user, setUser, loginUser, logOutUser, chatLists, setChatLists, selectedChat, setSelectedChat }}>
       {children}
     </AuthContext.Provider>
   );

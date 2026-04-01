@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext.js"
 
 export const useChats = () => {
-    const { selectedChat, setSelectedChat } = useContext(AuthContext)
-    return { selectedChat, setSelectedChat }
+    const {chatLists, setChatLists, selectedChat, setSelectedChat } = useContext(AuthContext)
+    return { chatLists, setChatLists, selectedChat, setSelectedChat }
 }
 

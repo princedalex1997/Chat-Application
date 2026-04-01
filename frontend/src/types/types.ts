@@ -6,9 +6,33 @@ export type USER = {
   createdAt?: string;
   updatedAt?: string;
   isAdmin?: boolean;
-  isGroupChat?:boolean;
-  chatName:string
+  isGroupChat?: boolean;
+  chatName: string;
 };
+
+export type ChatUser = {
+  _id: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  lastMessage?: string;
+  isOnline?: boolean;
+  updatedAt: string;
+  users: USER[];
+  isGroupChat?: string;
+  chatName: string;
+};
+
+type ChatList = {
+  _id:string;
+  chatName:string;
+  createdAt:string;
+  updatedAt:string;
+  isGroupChat:string;
+  latestMessage:string;
+  users: USER[];
+__v: string
+}
 
 export type AuthContextType = {
   user: USER | null;
@@ -17,20 +41,8 @@ export type AuthContextType = {
   logOutUser: (u: any) => void;
   selectedChat: USER[] | null;
   setSelectedChat: React.Dispatch<React.SetStateAction<USER[] | null>>;
-};
-
-export type ChatUser = {
-  _id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  lastMessage: string;
-  unreadCount?: number;
-  isOnline?: boolean;
-  updatedAt: string;
-  users: USER[];
-  isGroupChat?:true;
-  chatName:string
+  chatLists: ChatList[];
+  setChatLists: React.Dispatch<React.SetStateAction<ChatList[] | null>>;
 };
 export type ChatListPROPS = {
   lists: ChatUser[];
