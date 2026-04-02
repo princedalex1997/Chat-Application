@@ -7,7 +7,6 @@ import User from "../models/UserModels.js";
 export const accessChat = asyncHandler(async (req, res) => {
   const loggedInUserId = req.user._id;
   const { userId } = req.body;
-
   if (!userId) {
     return res.status(400).json({ message: "userId is required" });
   }
@@ -29,7 +28,6 @@ export const accessChat = asyncHandler(async (req, res) => {
     path: "latestMessage.sender",
     select: "name email",
   });
-
   if (isChat.length > 0) {
     return res.send(isChat[0]);
   } else {
@@ -39,7 +37,6 @@ export const accessChat = asyncHandler(async (req, res) => {
       users: [loggedInUserId, userId],
     };
   }
-
   try {
     const createChat = await Chat.create(ChatData);
     const FullChat = await Chat.find({ _id: createChat._id }).populate(
@@ -56,7 +53,7 @@ export const accessChat = asyncHandler(async (req, res) => {
 //Fn For Get All The Chats
 //URL : GET (http://localhost:5000/chats)
 export const fetchChats = asyncHandler(async (req, res) => {
-  console.log("requested id is :", req.user._id)
+  console.log("requested id is :", req.user._id);
   try {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
       .populate("users", "-password")
@@ -69,7 +66,7 @@ export const fetchChats = asyncHandler(async (req, res) => {
           select: "name email",
         });
         res.status(200).json(result);
-        console.log("Result is , ", result)
+        console.log("Result is , ", result);
       });
   } catch (error) {
     res.status(400);
@@ -82,7 +79,7 @@ export const fetchChats = asyncHandler(async (req, res) => {
 // {
 //           name: groupChatName,
 //           users: JSON.stringify(selectedUsers.map((u) => u._id)),
-//   },
+// },
 export const createGroupChat = asyncHandler(async (req, res) => {
   // group name
   // users

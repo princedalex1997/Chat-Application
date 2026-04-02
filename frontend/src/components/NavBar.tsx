@@ -27,7 +27,6 @@ const NavBar = () => {
     navigation("/")
     logOutUser(null)
   }
-  console.log("selectedChat", selectedChat)
 
   return (
     <nav className={` ${selectedChat ? "flex " : "hidden"}  items-center justify-between px-6 py-3 bg-white border-b
@@ -52,7 +51,7 @@ const NavBar = () => {
         {/* Name & Status */}
         <div className="flex flex-col">
           <h2 className="text-sm font-bold text-gray-800 leading-tight group-hover:text-blue-600 transition-colors">
-           {selectedChat.isGroupChat === "true" ? selectedChat.chatName : getChatUserName(selectedChat?.users)}
+           {selectedChat.isGroupChat === "true" ? selectedChat?.chatName : getChatUserName(selectedChat?.users)}
           </h2>
           <span className="text-xs text-green-500 font-medium tracking-wide">
             Online

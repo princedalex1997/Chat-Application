@@ -41,12 +41,11 @@ export const Register: React.FC = () => {
                 body: JSON.stringify(form),
             });
 
-            console.log("response is :", response)
             if (!response.ok) {
                 throw new Error('Sign in failed');
             }
             // Handle successful sign-in
-            console.log('Signed in successfully');
+            // console.log('Signed in successfully');
            
             alert("Done")
         } catch (err) {
