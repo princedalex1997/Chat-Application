@@ -13,6 +13,8 @@ import SkeletonLoading from "../pages/UI/UX"
 import { useChats } from '../hooks/useChats';
 import { TextField } from '@mui/material';
 import axios from 'axios';
+import { AiOutlineUsergroupAdd } from "react-icons/ai";
+
 
 const style = {
     position: 'absolute',
@@ -162,12 +164,12 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                         GO
                     </button>
                 </div>
-                <div onClick={handleProfileModalOpen}   >
+                <div onClick={handleProfileModalOpen} className='flex'  >
                     {/* <img
                         className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
 
                         src={Dummyprofile.avatar} alt={Dummyprofile.name?.charAt(0).toUpperCase()} /> */}
-                    <h1 className='text-black' > create Group</h1>
+                    <h1 className='text-black text-center' > <AiOutlineUsergroupAdd fontSize={30} /> </h1>
                 </div>
             </div>
 
@@ -201,9 +203,10 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                                         <span className="text-[10px] text-gray-400 shrink-0 uppercase">12:45 PM</span>
                                     </div>
                                     <p className="text-sm text-gray-500 truncate mt-0.5">
-                                        {chat?.lastMessage || "No messages yet..."}
+                                        {chat?.latestMessage
+                                            ? `${chat?.latestMessage?.sender?.name}: ${chat?.latestMessage?.content} `
+                                            : "No messages yet..."}
                                     </p>
-
                                 </div>
                             </div>
                         ))}

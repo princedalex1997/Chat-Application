@@ -15,7 +15,7 @@ export type ChatUser = {
   name?: string;
   email?: string;
   avatar?: string;
-  lastMessage?: string;
+  latestMessage?: LATESTMESSAGETYPES;
   isOnline?: boolean;
   updatedAt: string;
   users: USER[];
@@ -24,15 +24,29 @@ export type ChatUser = {
 };
 
 type ChatList = {
-  _id:string;
-  chatName:string;
-  createdAt:string;
-  updatedAt:string;
-  isGroupChat:string;
-  latestMessage:string;
+  _id: string;
+  chatName: string;
+  createdAt: string;
+  updatedAt: string;
+  isGroupChat: string;
+  latestMessage: LATESTMESSAGETYPES[];
   users: USER[];
-__v: string
-}
+  __v: string;
+};
+
+type SENDER = {
+  email: string;
+  name: string;
+  _id: string;
+};
+export type LATESTMESSAGETYPES = {
+  chat: string;
+  content: string;
+  createdAt: string;
+  sender: SENDER;
+  updatedAt: string;
+  _id: string;
+};
 
 export type AuthContextType = {
   user: USER | null;

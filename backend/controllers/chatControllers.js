@@ -75,44 +75,58 @@ export const fetchChats = asyncHandler(async (req, res) => {
 });
 
 // Create a Group for Chats
-//URL : http://localhost:5000/chats/group
+// URL : http://localhost:5000/chats/group
 // {
 //           name: groupChatName,
 //           users: JSON.stringify(selectedUsers.map((u) => u._id)),
 // },
 export const createGroupChat = asyncHandler(async (req, res) => {
-  // group name
-  // users
+  const { name, users } = req.body;
 
-  if (!req.body.name || !req.body.users) {
-    return res.status(400).send({ message: "Please Fill all the feilds" });
+  // 🔴 Validation
+  if (!name || !users) {
+    return res.status(400).json({ message: "Please fill all fields" });
   }
 
-  const users = JSON.parse(req.body.users);
-
-  if (users.length < 2) {
-    return res
-      .status(400)
-      .send("More than 2 users are required to form a group chat");
-  }
-  users.push(req.users);
+  let parsedUsers;
 
   try {
+    parsedUsers = JSON.parse(users);
+  } catch (error) {
+    return res.status(400).json({ message: "Invalid users format" });
+  }
+
+  if (parsedUsers.length < 2) {
+    return res.status(400).json({
+      message: "At least 2 users are required to form a group chat",
+    });
+  }
+
+  // ✅ Always include current user
+  parsedUsers.push(req.user._id);
+
+  // ❗ Remove duplicates (important)
+  const uniqueUsers = [...new Set(parsedUsers.map((id) => id.toString()))];
+
+  try {
+    // ✅ Create group chat (ONLY store ObjectIds)
     const groupChat = await Chat.create({
-      chatName: req.body.name,
+      chatName: name,
       isGroupChat: true,
-      users: users,
-      groupAdmin: req.user,
+      users: uniqueUsers,
+      groupAdmin: req.user._id, // ✅ FIXED
     });
 
-    const fullChat = await Chat.findOne({ _id: groupChat._id })
+    // ✅ Populate after creation
+    const fullChat = await Chat.findById(groupChat._id)
       .populate("users", "-password")
       .populate("groupAdmin", "-password");
 
-    res.status(200).json(fullChat);
+    return res.status(201).json(fullChat);
   } catch (error) {
-    res.status(400);
-    throw new Error(error.message);
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 });
 
