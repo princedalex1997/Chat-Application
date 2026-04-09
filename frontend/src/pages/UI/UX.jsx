@@ -2,6 +2,8 @@ import Box from "@mui/material/Box";
 import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
+import { format, isToday, isYesterday } from 'date-fns';
+
 
 export default function ChatListSkeleton() {
   // We can render multiple chat items by mapping over an array
@@ -90,3 +92,17 @@ export default function ChatListSkeleton() {
     </Box>
   );
 }
+
+
+
+const getChatTimestamp = (isoString) => {
+  const date = new Date(isoString);
+
+  if (isToday(date)) {
+    return format(date, 'p'); // "11:19 AM"
+  }
+  if (isYesterday(date)) {
+    return 'Yesterday';
+  }
+  return format(date, 'MM/dd/yy'); // "04/09/26"
+};

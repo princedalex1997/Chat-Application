@@ -21,7 +21,7 @@ const style = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: { xs: '90%', sm: 450 }, // Responsive width
+    width: { xs: '90%', sm: 450 },
     bgcolor: 'background.paper',
     borderRadius: '16px', // Modern rounded corners
     boxShadow: '0px 10px 40px rgba(0,0,0,0.12)',
@@ -55,13 +55,18 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
         // const chatIs = k.find((u: any) => u._id !== user._id)
         setChatProfile(k)
         setSelectedChat(k)
-        console.log(k)
+        // console.log(k)
 
     }
+    const capitalizeFirst = (str: string) => {
+        if (!str) return
+        return str.charAt(0).toUpperCase() + str.slice(1)
+    }
+
     const getChatUserName = (users = []) => {
         if (!users.length) return "No Users";
         const otherUser = users.find(u => u._id !== user._id);
-        return otherUser && otherUser?.name
+        return otherUser && capitalizeFirst(otherUser?.name)
     };
     //Debounde in useEffect
     useEffect(() => {
@@ -72,13 +77,17 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
         }, 400)
         return () => clearTimeout(deb)
     }, [searchUser])
+
     const handleSearchUser = async (query: string) => {
         setSearchLoading(true)
-        if (!searchUser || searchUser.trim().length === 0) return
+        if (!query || query.trim().length === 0) return
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), 4000);
         try {
             const { data } = await axios.get(
                 `${FETCHCHATUSER}?search=${query}`,
                 {
+                    signal: controller.signal,
                     headers: {
                         Authorization: `Bearer ${user.token}`,
                     },
@@ -90,6 +99,7 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
             console.warn("Error in handleFetchChatList ", error.message)
         } finally {
             setSearchLoading(false)
+            clearTimeout(timer)
         }
     }
     const handleSelectedAddUserToList = (userId: string) => {
@@ -130,6 +140,8 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
             setAddGroupLoading(false);
         }
     };
+
+
 
 
     return (
@@ -175,44 +187,70 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
 
             {/* 2. Scrollable List Area */}
             {/* flex-1 makes this div take up all remaining space, overflow-y-auto enables scrolling */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-white">
                 {loading ? (
                     <SkeletonLoading />
-                ) :
+                ) : (
                     <div className="flex flex-col divide-y divide-gray-100">
-                        {lists.map((chat) => (
-                            <div key={chat._id}
+                        {lists.map((chat) => {
+                            const isSelected = selectedChat?._id === chat._id;
 
-                                className="flex items-center gap-4 p-4 cursor-pointer transition-colors duration-200 hover:bg-gray-50 active:bg-gray-100">
-                                <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
-                                >
-                                    {/* // {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()} */}
-                                    {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()}
-                                </div>
-
-                                <div className="flex-1 min-w-0"
+                            return (
+                                <div
+                                    key={chat._id}
                                     onClick={() => handleAddSelectedChat(chat)}
+                                    className={`group flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 relative
+              ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}
+            `}
                                 >
-                                    <div className="flex justify-between items-baseline">
-                                        <h3 className="text-sm font-semibold text-gray-900 truncate">
-                                            {chat.isGroupChat === "true" ? chat?.chatName :
-                                                chat?.users && getChatUserName(chat?.users)
-                                            }
+                                    {/* Active Selection Indicator Bar */}
+                                    {isSelected && (
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" />
+                                    )}
 
-                                        </h3>
-                                        <span className="text-[10px] text-gray-400 shrink-0 uppercase">12:45 PM</span>
+                                    {/* Avatar Container */}
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-sm transition-transform group-hover:scale-105 
+              ${isSelected ? 'bg-blue-600' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}
+                                    >
+                                        {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()}
                                     </div>
-                                    <p className="text-sm text-gray-500 truncate mt-0.5">
-                                        {chat?.latestMessage
-                                            ? `${chat?.latestMessage?.sender?.name}: ${chat?.latestMessage?.content} `
-                                            : "No messages yet..."}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                }
 
+                                    {/* Content Area */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center mb-0.5">
+                                            <h3 className={`text-sm font-bold truncate ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                                                {chat.isGroupChat === "true"
+                                                    ? capitalizeFirst(chat?.chatName)
+                                                    : chat?.users && getChatUserName(chat?.users)
+                                                }
+                                            </h3>
+                                            <span className="text-[10px] font-medium text-gray-400 shrink-0">
+                                                12:45 PM
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center">
+                                            <p className={`text-xs truncate max-w-[180px] ${isSelected ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                                                {chat?.latestMessage ? (
+                                                    chat?.isGroupChat === "true"
+                                                        ? <span className="font-semibold text-gray-600">{chat.latestMessage.sender?.name}: <span className="font-normal">{chat.latestMessage.content}</span></span>
+                                                        : chat.latestMessage.content
+                                                ) : (
+                                                    <span className="italic opacity-80">No messages yet...</span>
+                                                )}
+                                            </p>
+
+                                            {/* Optional: Unread indicator dot */}
+                                            {!isSelected && chat?.unreadCount > 0 && (
+                                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
             <Modal
                 aria-labelledby="transition-modal-title"

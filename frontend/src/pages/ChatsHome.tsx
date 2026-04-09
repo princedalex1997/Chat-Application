@@ -27,7 +27,7 @@ const ChatsHome = () => {
           },
         }
       );
-      console.log("Search Resut:", data)
+      // console.log("Search Resut:", data)
     } catch (error) {
       console.log(error.response?.data?.message || error.message);
     } finally {
@@ -36,7 +36,7 @@ const ChatsHome = () => {
   };
 
   const handleFetchChatList = async () => {
-    setLoading(true)
+    // setLoading(true)
     try {
       const { data } = await axios.get(
         `${FETCHCHATLIST}`,
@@ -46,14 +46,13 @@ const ChatsHome = () => {
           },
         }
       );
-      console.log("API response fetching Chat List", data);
 
       setChatLists(Array.isArray(data) ? data : [])
 
     } catch (error) {
-      console.warn("Error in handleFetchChatList ", handleFetchChatList)
+      console.warn("Error in handleFetchChatList ", error)
     } finally {
-      setLoading(false)
+      // setLoading(false)
     }
   }
 
@@ -61,7 +60,7 @@ const ChatsHome = () => {
     handleFetchChatList()
     //  setChatLists(list)
   }, [])
-  
+
   return (
     <div className="lg:p-5 bg-[#6366F1] h-screen w-full flex flex-col overflow-hidden">
 
@@ -73,12 +72,9 @@ const ChatsHome = () => {
           {/* Changed w-90 to a standard w-80 or w-[350px] and added h-full */}
 
           <div className="hidden md:flex w-80 shrink-0 bg-[#1E293B] text-white rounded-xl overflow-hidden  flex-col border border-slate-700 shadow-xl">
-            {/* {
-              chatLists && chatLists.length > 0 ? */}
-
-                <ChatList lists={chatLists} loading={loading} searchOptions={searchOptions}
-                  setOptions={setOptions} handleSearchChat={handleSearchChat} />
-                {/* : <h1 className='flex items-center justify-center text-center' >Not Chat List Founded</h1>} */}
+            <ChatList lists={chatLists} searchOptions={searchOptions}
+              setOptions={setOptions} handleSearchChat={handleSearchChat} />
+            {/* : <h1 className='flex items-center justify-center text-center' >Not Chat List Founded</h1>} */}
           </div>
 
           {/* Chats Page Main Content */}

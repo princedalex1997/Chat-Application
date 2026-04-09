@@ -53,9 +53,10 @@ export const accessChat = asyncHandler(async (req, res) => {
 //Fn For Get All The Chats
 //URL : GET (http://localhost:5000/chats)
 export const fetchChats = asyncHandler(async (req, res) => {
-  console.log("requested id is :", req.user._id);
   try {
-    Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
+   Chat.find({
+  users: req.user._id
+})
       .populate("users", "-password")
       .populate("groupAdmin", "-password")
       .populate("latestMessage")
