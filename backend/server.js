@@ -3,15 +3,15 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import cors from "cors";
 import userRoutes from "./route/userRoutes.js";
-import  chatRoutes  from "./route/chatRoutes.js";
-import  messageRoute  from "./route/messageRoutes.js";
-import "./models/ChatModel.js"
-import "./models/MessageModel.js"
-import "./models/UserModels.js"
-import colors from "colors"
+import chatRoutes from "./route/chatRoutes.js";
+import messageRoute from "./route/messageRoutes.js";
+import "./models/ChatModel.js";
+import "./models/MessageModel.js";
+import "./models/UserModels.js";
+import { Server } from "socket.io";
+import colors from "colors";
 
 import mongoose from "mongoose";
-
 
 // console.log(mongoose.modelNames());
 
@@ -25,18 +25,21 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(5000, () => {
+app.use("/user", userRoutes);
+app.use("/chats", chatRoutes);
+app.use("/message", messageRoute);
+
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow.bold);
 });
 
-// console.log("DB:", process.env.MONGO_URI);
-// console.log("show :" , mongoose.connection.name);
-
-
-app.use("/user", userRoutes);
-app.use("/chats", chatRoutes)
-app.use("/message", messageRoute)
-// app.get("/api/data",(req,res)=>{
-//     // const single = data.find((c)=>c._id ===req.params.id)
-//     res.send(data)
-// })
+const io = new Server(server,{
+  pingTimeout: 60000,
+  cors:{
+    origin:"http://localhost:5173"
+  }
+})
+io.on("connection",(socket)=>{
+  console.log("Connected to socket.io");
+  
+})

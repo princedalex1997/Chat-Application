@@ -99,7 +99,7 @@ const getChatTimestamp = (isoString) => {
   const date = new Date(isoString);
 
   if (isToday(date)) {
-    return format(date, 'p'); // "11:19 AM"
+    return format(date, 'p'); // "11:19 AM". 
   }
   if (isYesterday(date)) {
     return 'Yesterday';

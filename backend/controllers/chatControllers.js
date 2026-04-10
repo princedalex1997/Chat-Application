@@ -67,7 +67,7 @@ export const fetchChats = asyncHandler(async (req, res) => {
           select: "name email",
         });
         res.status(200).json(result);
-        console.log("Result is , ", result);
+        // console.log("Result is , ", result);
       });
   } catch (error) {
     res.status(400);

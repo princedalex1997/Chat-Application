@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import NavBar from './NavBar';
 import { useChats } from '../hooks/useChats';
 import { useAuth } from '../hooks/useAuth';
-import { SENTMESSAGESBYID } from "../DATA/APIList.js";
+import { SENTMESSAGESBYID, BASE_URL } from "../DATA/APIList.js";
 import axios from 'axios';
 import getChatTimestamp from "../pages/UI/UX.jsx"
+import io from "socket.io-client"
+
+const ENDPOINT = BASE_URL;
+// const ENDPOINT = "http://localhost:5000";
+var socket, selectedChatCompare;
 
 const ChatPage = () => {
   const [loadingMessage, setLoadingMessage] = useState(false);
@@ -14,6 +19,9 @@ const ChatPage = () => {
 
   const { selectedChat } = useChats();
   const { user } = useAuth();
+
+
+  
 
   const handleSend = async () => {
     if (!inputMessage.trim()) return;
@@ -71,6 +79,9 @@ const ChatPage = () => {
     fetchMessages()
   }, [selectedChat])
 
+  useEffect(()=>{
+    socket = io(ENDPOINT)
+  },[])
   // console.log("Message ," , messages)
   return (
     <div className="h-screen flex flex-col bg-gray-100">
