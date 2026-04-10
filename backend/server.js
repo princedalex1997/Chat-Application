@@ -33,13 +33,36 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow.bold);
 });
 
-const io = new Server(server,{
+const io = new Server(server, {
   pingTimeout: 60000,
-  cors:{
-    origin:"http://localhost:5173"
-  }
-})
-io.on("connection",(socket)=>{
-  console.log("Connected to socket.io");
-  
-})
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
+io.on("connection", (socket) => {
+  // Create  a Setup For If The User Is Loggied In
+  socket.on("setup", (userData) => {
+    socket.join(userData._id);
+    socket.emit("connected");
+  });
+
+  // create a room for messing users
+  socket.on("join room", (roomId) => {
+    socket.join(roomId);
+    // console.log("room id is :" + roomId);
+  });
+
+  // check its typing or not! .
+  socket.on("typing", (roomid) => socket.in(roomid).emit("typing"));
+  socket.on("stop typing", (roomid) => socket.in(roomid).emit("stop typing"));
+
+  socket.on("new message", (newMessageRecived) => {
+    var chat = newMessageRecived.chat;
+    if (!chat.users) return;
+
+    chat.users.forEach((user) => {
+      if (user._id === newMessageRecived.sender._id) return;
+      socket.in(user._id).emit("message recieved", newMessageRecived);
+    });
+  });
+});

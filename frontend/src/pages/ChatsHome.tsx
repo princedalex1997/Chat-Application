@@ -6,18 +6,29 @@ import { dummyChatUsersList } from "../DATA/Dummy"
 import { FETCHCHATLIST, FETCHCHATUSER } from "../DATA/APIList"
 import axios from "axios"
 import { useChats } from '../hooks/useChats'
+import { USER } from '../types/types'
 
 const ChatsHome = () => {
   const [loading, setLoading] = useState(false)
   const [searchOptions, setOptions] = useState<string>("")
-  const [list, setList] = useState([])
   const { user } = useAuth()
   const { chatLists, setChatLists } = useChats()
+  const [searchUserLoading, setSearchUserLoading] = useState<Boolean>(false)
+  const [searchUserList, setSearchUserList] = useState<USER[]>([])
 
-  const handleSearchChat = async () => {
-    if (!searchOptions) return
+  useEffect(() => {
+    if (!searchOptions) return;
+    const delayDebounceFn = setTimeout(() => {
+      handleSearchChat(searchOptions)
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchOptions])
+
+  const handleSearchChat = async (searchOptions: string) => {
+    if (!searchOptions || !user) return
     // setOptions(e.target.value)
-    setLoading(true);
+    setSearchUserLoading(true);
     try {
       const { data } = await axios.get(
         `${FETCHCHATUSER}?search=${searchOptions}`,
@@ -27,11 +38,11 @@ const ChatsHome = () => {
           },
         }
       );
-      // console.log("Search Resut:", data)
-    } catch (error) {
+      setSearchUserList(data)
+    } catch (error: any) {
       console.log(error.response?.data?.message || error.message);
     } finally {
-      setLoading(false);
+      setSearchUserLoading(false);
     }
   };
 
@@ -73,7 +84,7 @@ const ChatsHome = () => {
 
           <div className="hidden md:flex w-80 shrink-0 bg-[#1E293B] text-white rounded-xl overflow-hidden  flex-col border border-slate-700 shadow-xl">
             <ChatList lists={chatLists} searchOptions={searchOptions}
-              setOptions={setOptions} handleSearchChat={handleSearchChat} />
+              setOptions={setOptions} handleSearchChat={handleSearchChat} searchUserLoading={searchUserLoading} searchUserList={searchUserList} />
             {/* : <h1 className='flex items-center justify-center text-center' >Not Chat List Founded</h1>} */}
           </div>
 

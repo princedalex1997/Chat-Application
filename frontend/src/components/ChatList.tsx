@@ -1,137 +1,139 @@
-import React, { memo, useEffect, useState } from 'react';
-import { ChatListPROPS, USER } from '../types/types';
-import { dummyChatUsersList } from "../DATA/Dummy"
-import Backdrop from '@mui/material/Backdrop';
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
-import Fade from '@mui/material/Fade';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import { FETCHCHATUSER, FETCHCHATLIST } from "../DATA/APIList"
-import { useAuth } from '../hooks/useAuth';
-import SkeletonLoading from "../pages/UI/UX"
-import { useChats } from '../hooks/useChats';
-import { TextField } from '@mui/material';
-import axios from 'axios';
+import React, { memo, useEffect, useState } from "react";
+import { ChatListPROPS, USER } from "../types/types";
+import Backdrop from "@mui/material/Backdrop";
+import Box from "@mui/material/Box";
+import Modal from "@mui/material/Modal";
+import Fade from "@mui/material/Fade";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import { FETCHCHATUSER, FETCHCHATLIST } from "../DATA/APIList";
+import { useAuth } from "../hooks/useAuth";
+import SkeletonLoading from "../pages/UI/UX";
+import { useChats } from "../hooks/useChats";
+import { Avatar, IconButton, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, TextField } from "@mui/material";
+import axios from "axios";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
+import { IoSearchSharp, IoChatbubbleEllipsesOutline } from "react-icons/io5";
+
+
 
 
 const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: { xs: '90%', sm: 450 },
-    bgcolor: 'background.paper',
-    borderRadius: '16px', // Modern rounded corners
-    boxShadow: '0px 10px 40px rgba(0,0,0,0.12)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: { xs: "90%", sm: 450 },
+    bgcolor: "background.paper",
+    borderRadius: "16px", // Modern rounded corners
+    boxShadow: "0px 10px 40px rgba(0,0,0,0.12)",
     p: 4,
-    outline: 'none',
-    display: 'flex',
-    flexDirection: 'column',
+    outline: "none",
+    display: "flex",
+    flexDirection: "column",
 };
 
-const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading }: ChatListPROPS) => {
+const ChatList = ({
+    lists,
+    searchOptions,
+    setOptions,
+    handleSearchChat,
+    loading,
+    searchUserLoading,
+    searchUserList,
+}: ChatListPROPS) => {
     const [openProfileModal, setOpenProfileModal] = React.useState(false);
     const handleProfileModalOpen = () => setOpenProfileModal(true);
     const handleProfileModalClose = () => setOpenProfileModal(false);
-    const [chatPorfile, setChatProfile] = useState([])
-    const [searchUser, setSearchUser] = useState<string | null>("")
-    const [searchUserList, setSearchUserList] = useState([])
-    const [selectedGropAddList, setSelectedGropAddList] = useState([]);
-    const [groupChatName, setGroupChatName] = useState("")
+    const [chatPorfile, setChatProfile] = useState([]);
+    const [searchUser, setSearchUser] = useState<string | null>(" ");
+    const [searchGroupUserAddList, setSearchGroupUserAddList] = useState([]);
+    const [selectedGropAddList, setSelectedGropAddList] = useState<string[]>([]);
+    const [groupChatName, setGroupChatName] = useState("");
 
+    const [searchLoading, setSearchLoading] = useState<boolean>(false);
+    const [addGroupLoading, setAddGroupLoading] = useState(false);
+    const [searchModalOpen, setSearchModalOpen] = useState(false)
 
-    const [searchLoading, setSearchLoading] = useState<boolean>(false)
-    const [addGroupLoading, setAddGroupLoading] = useState(false)
+    const { selectedChat, setSelectedChat, chatLists, setChatLists } = useChats();
 
-
-    const { selectedChat, setSelectedChat, chatLists, setChatLists } = useChats()
-
-    const { user } = useAuth()
-    const Dummyprofile = dummyChatUsersList[0]
+    const { user } = useAuth();
 
     const handleAddSelectedChat = (k: any) => {
         // const chatIs = k.find((u: any) => u._id !== user._id)
-        setChatProfile(k)
-        setSelectedChat(k)
+        setChatProfile(k);
+        setSelectedChat(k);
         // console.log(k)
-
-    }
+    };
     const capitalizeFirst = (str: string) => {
-        if (!str) return
-        return str.charAt(0).toUpperCase() + str.slice(1)
-    }
+        if (!str) return;
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    };
 
-    const getChatUserName = (users = []) => {
-        if (!users.length) return "No Users";
-        const otherUser = users.find(u => u._id !== user._id);
-        return otherUser && capitalizeFirst(otherUser?.name)
+    const getChatUserName = (users: USER[]) => {
+        if (!users.length || !user) return "No Users";
+        const otherUser = users.find((u) => u._id !== user._id);
+        return otherUser && capitalizeFirst(otherUser?.name);
     };
     //Debounde in useEffect
     useEffect(() => {
+        if (!searchUser) return
         const deb = setTimeout(() => {
             if (searchUser.trim()) {
-                handleSearchUser(searchUser)
+                handleSearchUser(searchUser);
             }
-        }, 400)
-        return () => clearTimeout(deb)
-    }, [searchUser])
+        }, 400);
+        return () => clearTimeout(deb);
+    }, [searchUser]);
 
     const handleSearchUser = async (query: string) => {
-        setSearchLoading(true)
-        if (!query || query.trim().length === 0) return
-        const controller = new AbortController()
+        if (!user) return
+        setSearchLoading(true);
+        if (!query || query.trim().length === 0) return;
+        const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 4000);
         try {
-            const { data } = await axios.get(
-                `${FETCHCHATUSER}?search=${query}`,
-                {
-                    signal: controller.signal,
-                    headers: {
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                }
-            );
-            setSearchUserList(data)
-            // console.log("setSearchUserList is :", data)
-        } catch (error) {
-            console.warn("Error in handleFetchChatList ", error.message)
+            const { data } = await axios.get(`${FETCHCHATUSER}?search=${query}`, {
+                signal: controller.signal,
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
+            setSearchGroupUserAddList(data);
+        } catch (error: any) {
+            console.warn("Error in handleFetchChatList ", error.message);
         } finally {
-            setSearchLoading(false)
-            clearTimeout(timer)
+            setSearchLoading(false);
+            clearTimeout(timer);
         }
-    }
+    };
     const handleSelectedAddUserToList = (userId: string) => {
+        if (!userId) return
         setSelectedGropAddList((prev) =>
-            prev.includes(userId) ? prev : [...prev, userId]
+            prev.includes(userId) ? prev : [...prev, userId],
         );
     };
     const handleAddGroup = async () => {
+        if (!user) return
         setAddGroupLoading(true);
         const payload = {
             name: groupChatName,
             users: JSON.stringify([
-                ...selectedGropAddList.map(u => u._id),
-                user._id
+                ...selectedGropAddList,
+                user._id,
             ]),
         };
-        console.log("payload is :", user._id)
         try {
-            const { data } = await axios.post(
-                `${FETCHCHATLIST}group`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                }
-            );
+            const { data } = await axios.post(`${FETCHCHATLIST}group`, payload, {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            });
             alert("Done");
-            setChatLists(prev => [...prev, data])
-            setGroupChatName("")
-            selectedGropAddList.length = 0
-            setOpenProfileModal(false)
+            setChatLists((prev: any[]) => [...prev, data]);
+            setGroupChatName("");
+            selectedGropAddList.length = 0;
+            setOpenProfileModal(false);
             console.log("Done", data);
         } catch (error: any) {
             console.log("error ins API");
@@ -141,47 +143,33 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
         }
     };
 
+    const handleSearchModalOpen = () => {
+        setSearchModalOpen(true)
+    }
 
+    const handleSearchModalClose = () => {
+        setSearchModalOpen(false)
+    }
 
-
+    console.log("selectedGropAddList" , selectedGropAddList);
+    
     return (
         /* 1. Fix the height to screen and use flex-col */
         <div className="flex flex-col h-screen max-w-md border-r border-gray-200 bg-white">
-
             {/* Header / Search Area (Fixed Height) */}
-            <div className="p-4 border-b flex flex-row items-center">
-                <div className="flex items-center rounded-full px-2 bg-gray-100 border-2 border-transparent transition-all duration-300 focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-md">
-                    <input
-                        type="text"
-                        placeholder="Search chats..."
-                        className="bg-transparent border-none outline-none flex-1 p-2 text-sm text-gray-700 placeholder-gray-400"
-                        value={searchOptions}
-                        // onChange={(e) => setOptions(e.target.value)}
-                        onChange={(e) => setOptions(e.target.value)}
-                        maxLength={30}
-                    />
-                    <button
-                        type="button"
-                        className={`
-                            bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full
-                            transition-all duration-300 ease-out transform
-                            ${searchOptions.length > 0
-                                ? "opacity-100 translate-x-0 scale-100"
-                                : "opacity-0 translate-x-4 scale-90 pointer-events-none"
-                            }
-                            hover:bg-blue-600 active:scale-95
-                        `}
-                        onClick={handleSearchChat}
-                    >
-                        GO
-                    </button>
-                </div>
-                <div onClick={handleProfileModalOpen} className='flex'  >
-                    {/* <img
-                        className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white font-bold shrink-0 shadow-sm"
+            <div className="p-4 border-b flex flex-row items-center justify-between">
+                {/* 1st seach part */}
+                {/* <img src={user?.pic} className="  w-13 h-13 rounded-full object-cover border" alt={user?.name[0]} /> */}
+                <Avatar src={user?.pic} >
+                    {user?.name?.charAt(0)}
+                </Avatar>
+                {/* create group             */}
+                <div className="flex gap-4 ">
+                    <h1 onClick={handleSearchModalOpen}><IoSearchSharp color="black" fontSize={30} /></h1>
+                    <h1 className="text-black text-center" onClick={handleProfileModalOpen} >
 
-                        src={Dummyprofile.avatar} alt={Dummyprofile.name?.charAt(0).toUpperCase()} /> */}
-                    <h1 className='text-black text-center' > <AiOutlineUsergroupAdd fontSize={30} /> </h1>
+                        <AiOutlineUsergroupAdd fontSize={30} />{" "}
+                    </h1>
                 </div>
             </div>
 
@@ -200,7 +188,7 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                                     key={chat._id}
                                     onClick={() => handleAddSelectedChat(chat)}
                                     className={`group flex items-center gap-3 p-4 cursor-pointer transition-all duration-200 relative
-              ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}
+              ${isSelected ? "bg-blue-50" : "hover:bg-gray-50"}
             `}
                                 >
                                     {/* Active Selection Indicator Bar */}
@@ -209,20 +197,23 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                                     )}
 
                                     {/* Avatar Container */}
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-sm transition-transform group-hover:scale-105 
-              ${isSelected ? 'bg-blue-600' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}
+                                    <div
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-sm transition-transform group-hover:scale-105 
+              ${isSelected ? "bg-blue-600" : "bg-linear-to-br from-blue-400 to-indigo-500"}`}
                                     >
-                                        {chat?.users && getChatUserName(chat.users)?.charAt(0).toUpperCase()}
+                                        {chat?.users &&
+                                            getChatUserName(chat.users)?.charAt(0).toUpperCase()}
                                     </div>
 
                                     {/* Content Area */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center mb-0.5">
-                                            <h3 className={`text-sm font-bold truncate ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                                            <h3
+                                                className={`text-sm font-bold truncate ${isSelected ? "text-blue-900" : "text-gray-900"}`}
+                                            >
                                                 {chat.isGroupChat === "true"
                                                     ? capitalizeFirst(chat?.chatName)
-                                                    : chat?.users && getChatUserName(chat?.users)
-                                                }
+                                                    : chat?.users && getChatUserName(chat?.users)}
                                             </h3>
                                             <span className="text-[10px] font-medium text-gray-400 shrink-0">
                                                 12:45 PM
@@ -230,20 +221,31 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                                         </div>
 
                                         <div className="flex justify-between items-center">
-                                            <p className={`text-xs truncate max-w-[180px] ${isSelected ? 'text-blue-700 font-medium' : 'text-gray-500'}`}>
+                                            <p
+                                                className={`text-xs truncate max-w-45 ${isSelected ? "text-blue-700 font-medium" : "text-gray-500"}`}
+                                            >
                                                 {chat?.latestMessage ? (
-                                                    chat?.isGroupChat === "true"
-                                                        ? <span className="font-semibold text-gray-600">{chat.latestMessage.sender?.name}: <span className="font-normal">{chat.latestMessage.content}</span></span>
-                                                        : chat.latestMessage.content
+                                                    chat?.isGroupChat === "true" ? (
+                                                        <span className="font-semibold text-gray-600">
+                                                            {chat.latestMessage.sender?.name}:{" "}
+                                                            <span className="font-normal">
+                                                                {chat.latestMessage.content}
+                                                            </span>
+                                                        </span>
+                                                    ) : (
+                                                        chat.latestMessage.content
+                                                    )
                                                 ) : (
-                                                    <span className="italic opacity-80">No messages yet...</span>
+                                                    <span className="italic opacity-80">
+                                                        No messages yet...
+                                                    </span>
                                                 )}
                                             </p>
 
                                             {/* Optional: Unread indicator dot */}
-                                            {!isSelected && chat?.unreadCount > 0 && (
+                                            {/* {!isSelected && chat?.unreadCount > 0 && (
                                                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                 </div>
@@ -262,29 +264,39 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                 slotProps={{
                     backdrop: {
                         timeout: 500,
-                        sx: { backdropFilter: 'blur(4px)' } // Adds a modern blur to the background
+                        sx: { backdropFilter: "blur(4px)" }, // Adds a modern blur to the background
                     },
                 }}
             >
                 <Fade in={openProfileModal}>
                     <Box sx={style}>
                         {/* Header Section */}
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            mb: 2 // Margin bottom
-                        }}>
-                            <Typography id="transition-modal-title" variant="h5" sx={{ fontWeight: 600 }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                mb: 2, // Margin bottom
+                            }}
+                        >
+                            <Typography
+                                id="transition-modal-title"
+                                variant="h5"
+                                sx={{ fontWeight: 600 }}
+                            >
                                 Create Group
                             </Typography>
 
                             <Button
                                 variant="contained"
-                                disabled={!searchUser.trim() || addGroupLoading || selectedGropAddList.length === 0}
+                                disabled={
+                                    !searchUser || !searchUser.trim() ||
+                                    addGroupLoading ||
+                                    selectedGropAddList.length === 0
+                                }
                                 onClick={handleAddGroup}
-                                sx={{ borderRadius: '8px', textTransform: 'none' }}
+                                sx={{ borderRadius: "8px", textTransform: "none" }}
                             >
                                 {addGroupLoading ? "Creating" : "Add"}
                             </Button>
@@ -311,51 +323,175 @@ const ChatList = ({ lists, searchOptions, setOptions, handleSearchChat, loading 
                         />
 
                         {/* Results Section */}
-                        {searchUser.length > 1 || !searchLoading &&
-                            <Typography variant="overline" sx={{ color: 'text.secondary', visibility: searchLoading ? "hidden" : "visible", fontWeight: 'bold' }}>
-                                Suggested Users
-                            </Typography>
-                        }
+                        {(Array.isArray(searchUser) ? searchUser : [searchUser]).length > 1 ||
+                            (!searchLoading && (
+                                <Typography
+                                    variant="overline"
+                                    sx={{
+                                        color: "text.secondary",
+                                        visibility: searchLoading ? "hidden" : "visible",
+                                        fontWeight: "bold",
+                                    }}
+                                >
+                                    Suggested Users
+                                </Typography>
+                            ))}
                         {searchLoading ? "Loading" : ""}
 
-                        <Box sx={{
-                            maxHeight: '200px',
-                            overflowY: 'auto',
-                            mt: 1,
-                            // Custom scrollbar styling
-                            '&::-webkit-scrollbar': { width: '6px' },
-                            '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '10px' }
-                        }}>
-                            {searchUserList.length > 0 ? (
-                                searchUserList.map((item) => (
+                        <Box
+                            sx={{
+                                maxHeight: "200px",
+                                overflowY: "auto",
+                                mt: 1,
+                                // Custom scrollbar styling
+                                "&::-webkit-scrollbar": { width: "6px" },
+                                "&::-webkit-scrollbar-thumb": {
+                                    backgroundColor: "#ccc",
+                                    borderRadius: "10px",
+                                },
+                            }}
+                        >
+                            {searchGroupUserAddList.length > 0 ? (
+                                searchGroupUserAddList.map((item: USER) => (
                                     <Box
                                         key={item._id}
                                         sx={{
                                             p: 1.5,
                                             mb: 1,
-                                            borderRadius: '8px',
-                                            bgcolor: '#f9f9f9',
-                                            '&:hover': { bgcolor: '#f0f0f0' },
-                                            transition: '0.2s'
+                                            borderRadius: "8px",
+                                            bgcolor: "#f9f9f9",
+                                            "&:hover": { bgcolor: "#f0f0f0" },
+                                            transition: "0.2s",
                                         }}
-                                        onClick={() => handleSelectedAddUserToList(item)}
+                                        onClick={() => handleSelectedAddUserToList(item._id)}
                                     >
-                                        <Typography variant="body2" sx={{ color: 'gray' }} >{item?.name}</Typography>
+                                        <Typography variant="body2" sx={{ color: "gray" }}>
+                                            {item?.name}
+                                        </Typography>
                                     </Box>
                                 ))
                             ) : (
-                                <Typography variant="body2" sx={{ color: 'gray', display: `${searchLoading && "hidden"}`, fontStyle: 'italic', mt: 1 }}>
-                                    {searchUser.length > 0 && "  No users found..."}
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: "gray",
+                                        display: `${searchLoading && "hidden"}`,
+                                        fontStyle: "italic",
+                                        mt: 1,
+                                    }}
+                                >
+                                    {(Array.isArray(searchUser) ? searchUser : [searchUser])?.length > 0 && "  No users found..."}
                                 </Typography>
                             )}
-
-
                         </Box>
+                    </Box>
+                </Fade>
+            </Modal>
+
+            <Modal
+                aria-labelledby="transition-modal-title"
+                aria-describedby="transition-modal-description"
+                open={searchModalOpen}
+                onClose={handleSearchModalClose}
+                closeAfterTransition
+                slots={{ backdrop: Backdrop }}
+                slotProps={{
+                    backdrop: {
+                        timeout: 500,
+                        sx: { backdropFilter: "blur(4px)" }, // Adds a modern blur to the background
+                    },
+                }}
+            >
+                <Fade in={searchModalOpen}>
+                    <Box sx={style}>
+                        <div className="flex items-center rounded-full px-2 bg-gray-100 border-2 border-transparent transition-all duration-300 focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-md">
+                            <input
+                                type="text"
+                                placeholder="Search name..."
+                                className="bg-transparent border-none outline-none flex-1 p-2 text-sm text-gray-700 placeholder-gray-400"
+                                value={searchOptions}
+                                // onChange={(e) => setOptions(e.target.value)}
+                                onChange={(e) => setOptions(e.target.value)}
+                                maxLength={30}
+                            />
+                            {/* { searchUserLoading ?  "Loading" :"not" } */}
+                            <button
+                                //disabled={!searchUserLoading}
+                                type="button"
+                                className={`
+                            bg-blue-500 text-white text-xs font-bold py-1.5 px-4 rounded-full
+                            transition-all duration-300 ease-out transform
+                            ${searchOptions.length > 0
+                                        ? "opacity-100 translate-x-0 scale-100"
+                                        : "opacity-0 translate-x-4 scale-90 pointer-events-none"
+                                    }
+                            hover:bg-blue-600 active:scale-95
+                        `}
+                                onClick={handleSearchChat}
+                            >
+                                {searchUserLoading ? "loading" : "GO"}
+                            </button>
+                        </div>
+                        {(Array.isArray(searchUserList) ? searchUserList : [searchUserList]).length > 0 ?
+                            <>
+                                <List>
+                                    {(Array.isArray(searchUserList) ? searchUserList : [searchUserList]).map((user: any) => (
+                                        <ListItem key={user._id}>
+                                            <ListItemAvatar>
+                                                <Avatar src={user?.pic} alt={user?.name} >
+                                                    {user?.name?.charAt(0)}
+                                                </Avatar>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={user?.name} />
+                                            <Button> <IoChatbubbleEllipsesOutline fontSize={30} /> </Button>
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </>
+                            : (
+                                <>
+                                    {searchUserLoading ? (
+                                        /* Loading State: Added an animate-pulse for a smoother feel */
+                                        <div className="flex flex-col items-center justify-center py-20">
+                                            <div className="flex items-center space-x-2 animate-pulse">
+                                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                                <h1 className="text-lg font-medium text-gray-500">Searching users...</h1>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Empty State */
+                                        <div className={` ${searchOptions.length > 0 ? "flex" : "hidden"} flex-col items-center justify-center py-16 px-4 text-center 
+                                        border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50`}>
+                                            {/* Optional: Add a simple search icon here for better UX */}
+                                            <svg
+                                                className="w-12 h-12 text-gray-300 mb-4"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+
+                                            <h3 className="text-gray-900 font-semibold text-base mb-1">
+                                                No users found
+                                            </h3>
+
+                                            <p className="text-gray-500 text-sm max-w-xs">
+                                                We couldn't find any matches for
+                                                <span className="font-bold text-gray-800 break-all"> "{searchOptions}"</span>.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                </>
+                            )
+                        }
+
                     </Box>
                 </Fade>
             </Modal>
         </div>
     );
-}
+};
 
 export default memo(ChatList);

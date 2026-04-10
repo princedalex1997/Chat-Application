@@ -9,9 +9,10 @@ import Chat from "../models/ChatModel.js";
 // {
 // 	"content":"hi Testinggg 2",
 //  "chatId": "69c54b4c9052cddf06db0bc2"
+//   "img":img
 // }
 export const sendMessage = asyncHandler(async (req, res) => {
-  const { content, chatId, userId } = req.body;
+  const { content, chatId, userId, img } = req.body;
 
   // 🔴 Validate input
   if (!content) {
@@ -36,7 +37,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
     // 🔒 Authorization check
     const isUserInChat = chat.users.some(
-      (u) => u.toString() === req.user._id.toString()
+      (u) => u.toString() === req.user._id.toString(),
     );
 
     if (!isUserInChat) {
@@ -72,6 +73,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     sender: req.user._id,
     content,
     chat: chat._id,
+    img: img ? img : null,
   });
 
   // ✅ Populate message
@@ -92,9 +94,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
   res.status(200).json(message);
 });
 
-
-
-
 // Fetch all the messages
 //http://localhost:5000/message/${69c54b4c9052cddf06db0bc2}
 
@@ -109,8 +108,6 @@ export const fetchAllChats = asyncHandler(async (req, res) => {
     throw new Error(error.message);
   }
 });
-
-
 
 // export const sendMessage = asyncHandler(async (req, res) => {
 //   const { content, chatId, userId } = req.body;

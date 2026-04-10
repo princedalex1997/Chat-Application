@@ -3,7 +3,7 @@ import User from "../models/UserModels.js";
 import asyncHandler from "express-async-handler";
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, pic, number } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);
@@ -19,6 +19,8 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    pic: pic ? pic : null,
+    number: number ? number : "",
   });
   const tokens = await generateToken(user._id);
   if (user) {
@@ -27,6 +29,8 @@ export const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       password: user.password,
+      pic: pic,
+      number: number,
       tokens,
     });
   } else {
@@ -48,6 +52,8 @@ export const loginUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      pic:user.pic,
+      number:user.number,
       token,
     });
   } else {

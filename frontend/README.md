@@ -54,7 +54,7 @@ like  this
         "__v": 0
     }
 ]
-so no chat fount at this time . you just create a query between you and reciever
+so no chat fount at this time . you just create a query between sender and reciever
 
 after that start   message to reciever
 2. create a message it .  

@@ -7,7 +7,9 @@ export type USER = {
   updatedAt?: string;
   isAdmin?: boolean;
   isGroupChat?: boolean;
-  chatName: string;
+  chatName?: string;
+  pic:string;
+  number:number,
 };
 
 export type ChatUser = {
@@ -61,8 +63,9 @@ export type AuthContextType = {
 export type ChatListPROPS = {
   lists: ChatUser[];
   searchOptions: string;
-
   setOptions: (value: string) => void;
   handleSearchChat: () => void;
   loading: Boolean;
+  searchUserLoading: Boolean;
+  searchUserList: USER[] | null
 };
